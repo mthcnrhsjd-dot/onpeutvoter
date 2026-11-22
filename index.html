@@ -490,10 +490,14 @@ function podium() {
 }
 
 window.addEventListener('error', e => {
+  // « Script error. ligne 0 » = erreur venue d'ailleurs (Safari, extension, traduction…), pas de l'appli : on l'ignore
+  if (!e.lineno || /^Script error/i.test(e.message || '')) return;
+  // cadre en haut, transparent aux doigts (ne bloque jamais les boutons), disparaît tout seul
   const d = document.createElement('div');
-  d.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;background:#fff;color:#000;border:2px solid #000;border-radius:12px;padding:10px;font:13px monospace;z-index:9';
+  d.style.cssText = 'position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 60px);background:#fff;color:#000;border:2px solid #000;border-radius:12px;padding:10px;font:13px monospace;z-index:9;pointer-events:none;opacity:.92';
   d.textContent = 'Erreur (fais une capture pour Xray) : ' + e.message + ' ligne ' + e.lineno;
   document.body.appendChild(d);
+  setTimeout(() => d.remove(), 10000);
 });
 accueil();
 </script>
