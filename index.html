@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<title>On peut voter ?</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+/* Style B « Grosse carte » : fond crème, cartes à bord noir un peu penchées. En sombre : mêmes formes, couleurs sombres. */
+:root{--bg:#FBF6EE;--ink:#1C1C1E;--card:#fff;--soft:#6b6257;--line:#1C1C1E;--onink:#fff;
+  --civil:#3D7BF0;--under:#FF5A4E;--white:#F4F1EA;--whiteInk:#1C1C1E;--bouffon:#8E5CF0;--gold:#E8A317;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#121214;--ink:#F2EDE4;--card:#1F1F23;--soft:#9a948a;--line:#F2EDE4;--onink:#121214;
+  --white:#E9E5DD;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+#app{min-height:100%;display:flex;flex-direction:column;align-items:center;max-width:520px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top,0px) + 22px) 20px calc(env(safe-area-inset-bottom,0px) + 20px)}
+.scr{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;animation:in .3s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.grow{flex:1}
+.mid{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.btn{display:block;width:100%;border:2.5px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);
+  font:800 18px/1 inherit;font-family:inherit;padding:16px 0;margin-top:10px;cursor:pointer;transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.main{background:var(--ink);color:var(--onink)}
+.btn.off{opacity:.3;pointer-events:none}
+.top{font-size:15px;font-weight:700;color:var(--soft);min-height:20px;text-align:center}
+.h1{font-size:30px;font-weight:800;text-align:center;line-height:1.15;margin:0}
+.h2{font-size:22px;font-weight:800;text-align:center;line-height:1.2;margin:0}
+.txt{font-size:16px;color:var(--soft);text-align:center;line-height:1.4;max-width:300px}
+.card{border:3px solid var(--line);border-radius:22px;background:var(--card);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:16px}
+.logo{width:170px;height:215px;transform:rotate(-6deg);font-size:31px;font-weight:800;line-height:1.05;margin-top:40px}
+.big{width:220px;min-height:280px}
+.word{font-size:36px;font-weight:800;line-height:1.1;word-break:break-word}
+.chip{border:2.5px solid var(--line);border-radius:14px;background:var(--card);padding:9px 14px;text-align:center;max-width:280px}
+.chip b{display:block;font-size:17px;font-weight:800}
+.chip span{font-size:14px;color:var(--soft)}
+input{width:100%;font:700 22px inherit;font-family:inherit;text-align:center;color:var(--ink);background:var(--card);
+  border:3px solid var(--line);border-radius:18px;padding:16px;outline:none;-webkit-user-select:text;user-select:text}
+input::placeholder{color:var(--soft);opacity:.6}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+/* réglages */
+.rows{width:100%;display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.row{display:flex;align-items:center;justify-content:space-between;border:2.5px solid var(--line);border-radius:18px;
+  background:var(--card);padding:10px 12px 10px 16px;min-height:60px}
+.row .l{font-size:18px;font-weight:800}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:42px;height:42px;border-radius:50%;border:2.5px solid var(--line);background:transparent;color:var(--ink);
+  font:800 22px/1 inherit;font-family:inherit;padding:0;cursor:pointer}
+.step button:active{transform:scale(.9)}
+.step .v{min-width:36px;text-align:center;font-size:22px;font-weight:800}
+.sw{width:56px;height:34px;border-radius:999px;border:2.5px solid var(--line);position:relative;background:transparent;transition:background .2s;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:var(--ink);transition:transform .2s,background .2s}
+.sw.on{background:var(--ink)}.sw.on::after{transform:translateX(22px);background:var(--bg)}
+.sec{font-size:15px;font-weight:800;color:var(--soft);margin:12px 0 0 6px;align-self:flex-start}
+.warn{font-size:15px;font-weight:700;color:var(--under);text-align:center;min-height:20px;margin-top:10px}
+.back,.rond{align-self:flex-start;width:44px;height:44px;border-radius:50%;border:2.5px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--card);color:var(--ink);flex:none}
+#app{position:relative}
+.pause{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:16px;z-index:3}
+/* vote */
+.list{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.pl{border:2.5px solid var(--line);border-radius:18px;background:var(--card);padding:18px 8px;font-size:18px;font-weight:800;
+  text-align:center;cursor:pointer;word-break:break-word}
+.pl:active{transform:scale(.96)}
+.pl.out{opacity:.25;text-decoration:line-through;pointer-events:none}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;z-index:5;animation:in .2s}
+.ov .card{width:100%;max-width:340px;padding:24px 18px 14px;transform:rotate(-1.5deg)}
+.two{display:flex;gap:10px;width:100%}
+/* révélation façon pack */
+.stage{perspective:1000px;width:220px;height:300px}
+.flip{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,1.4,.5,1)}
+.flip.on{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:3px solid var(--line);border-radius:22px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center}
+.face.back{background:var(--card);background-image:repeating-linear-gradient(45deg,transparent 0 14px,rgba(128,128,128,.18) 14px 28px)}
+.face.front{transform:rotateY(180deg);color:#fff}
+.face.front .rn{font-size:30px;font-weight:800;line-height:1.1}
+.face.front .rw{font-size:17px;margin-top:6px;font-weight:600;opacity:.9}
+.r-civil{background:var(--civil)}.r-under{background:var(--under)}.r-bouffon{background:var(--bouffon)}
+.r-white{background:var(--white);color:var(--whiteInk)!important}
+.charge{animation:charge 1.9s ease-in forwards}
+@keyframes charge{
+  0%{transform:rotate(0) scale(1);box-shadow:0 0 0 rgba(255,210,90,0)}
+  20%{transform:rotate(-2deg) scale(1.01)}25%{transform:rotate(2deg)}30%{transform:rotate(-2deg)}35%{transform:rotate(2deg)}
+  50%{transform:rotate(-3deg) scale(1.03);box-shadow:0 0 30px rgba(255,210,90,.5)}55%{transform:rotate(3deg)}60%{transform:rotate(-4deg)}65%{transform:rotate(4deg)}
+  75%{transform:rotate(-5deg) scale(1.06)}80%{transform:rotate(5deg)}85%{transform:rotate(-6deg)}90%{transform:rotate(6deg)}
+  100%{transform:rotate(0) scale(1.1);box-shadow:0 0 90px rgba(255,220,120,1)}}
+.pop{animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(1.1)}50%{transform:scale(.94)}to{transform:scale(1)}}
+.later{opacity:0;transition:opacity .4s}.later.show{opacity:1}
+.who{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:340px}
+.tag{border-radius:999px;padding:6px 12px;font-size:15px;font-weight:800;color:#fff}
+.tag.r-white{border:2px solid var(--line)}
+.tag.dead{opacity:.55}
+/* podium */
+.podium{display:flex;align-items:flex-end;gap:10px;height:280px;width:100%;justify-content:center}
+.pod{width:31%;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pod .n{font-size:17px;font-weight:800;text-align:center;word-break:break-word}
+.pod .p{font-size:15px;font-weight:700;color:var(--soft)}
+.pod .b{width:100%;border:3px solid var(--line);border-radius:16px 16px 0 0;background:var(--card);display:flex;justify-content:center;padding-top:8px;
+  font-size:30px;font-weight:800;height:0;transition:height 1s cubic-bezier(.3,1.3,.5,1)}
+.pod.g .b{background:var(--gold);color:#1C1C1E}
+</style>
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="On peut voter">
+<meta name="theme-color" content="#FBF6EE">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>html,body{height:100%}body{padding:0}</style>
+</head>
+<body>
+
+<div id="app"></div>
+<script>
+// Paires de mots de « On peut voter ? »
+// Règle : rien de religieux, rien d'osé, pas de maladie ni de mort. Des mots tranquilles.
+// Une ligne = une paire. L'appli tire au hasard lequel des deux est le mot des civils.
+window.OPV_MOTS = [
+  // Nourriture et boissons
+  ["Pizza", "Burger"], ["Croissant", "Pain au chocolat"], ["Crêpe", "Gaufre"], ["Frites", "Chips"],
+  ["Spaghetti", "Lasagnes"], ["Sushi", "Nems"], ["Fromage", "Yaourt"], ["Chocolat", "Caramel"],
+  ["Glace", "Sorbet"], ["Pomme", "Poire"], ["Fraise", "Framboise"], ["Citron", "Orange"],
+  ["Banane", "Mangue"], ["Tomate", "Poivron"], ["Carotte", "Navet"], ["Kebab", "Tacos"],
+  ["Hot-dog", "Sandwich"], ["Ketchup", "Mayonnaise"], ["Café", "Thé"], ["Coca-Cola", "Pepsi"],
+  ["Jus d'orange", "Limonade"], ["Bonbon", "Chewing-gum"], ["Popcorn", "Barbe à papa"], ["Raclette", "Fondue"],
+  ["Couscous", "Paella"], ["Omelette", "Œuf au plat"], ["Nutella", "Confiture"], ["Miel", "Sirop d'érable"],
+  ["Riz", "Pâtes"], ["Steak", "Poulet"], ["Saumon", "Thon"], ["Soupe", "Purée"],
+  ["Gâteau", "Tarte"], ["Macaron", "Cookie"], ["Brioche", "Baguette"], ["Vin", "Bière"],
+  ["Pastèque", "Melon"], ["Cerise", "Raisin"], ["Moutarde", "Vinaigrette"], ["Donut", "Muffin"],
+  // Animaux
+  ["Chat", "Chien"], ["Lion", "Tigre"], ["Cheval", "Âne"], ["Loup", "Renard"],
+  ["Dauphin", "Requin"], ["Abeille", "Guêpe"], ["Papillon", "Libellule"], ["Poule", "Canard"],
+  ["Vache", "Mouton"], ["Lapin", "Hamster"], ["Singe", "Paresseux"], ["Éléphant", "Hippopotame"],
+  ["Girafe", "Zèbre"], ["Pingouin", "Phoque"], ["Aigle", "Hibou"], ["Serpent", "Lézard"],
+  ["Grenouille", "Crapaud"], ["Tortue", "Escargot"], ["Ours", "Panda"], ["Crocodile", "Dinosaure"],
+  ["Perroquet", "Pigeon"], ["Fourmi", "Araignée"], ["Méduse", "Pieuvre"], ["Kangourou", "Koala"],
+  ["Souris", "Rat"], ["Cochon", "Chèvre"], ["Baleine", "Orque"], ["Flamant rose", "Cygne"],
+  // Objets de la maison
+  ["Fourchette", "Cuillère"], ["Stylo", "Crayon"], ["Parapluie", "Imperméable"], ["Lunettes", "Lentilles"],
+  ["Montre", "Bracelet"], ["Oreiller", "Couette"], ["Brosse à dents", "Dentifrice"], ["Clé", "Cadenas"],
+  ["Bougie", "Lampe"], ["Miroir", "Fenêtre"], ["Chaise", "Tabouret"], ["Canapé", "Fauteuil"],
+  ["Lit", "Hamac"], ["Ciseaux", "Couteau"], ["Valise", "Sac à dos"], ["Casquette", "Bonnet"],
+  ["Chaussettes", "Chaussons"], ["Baskets", "Bottes"], ["Écharpe", "Cravate"], ["Sac à main", "Portefeuille"],
+  ["Réveil", "Horloge"], ["Télécommande", "Manette"], ["Frigo", "Congélateur"], ["Four", "Micro-ondes"],
+  ["Aspirateur", "Balai"], ["Douche", "Baignoire"], ["Savon", "Shampoing"], ["Livre", "Magazine"],
+  ["Carte postale", "Lettre"], ["Appareil photo", "Caméra"], ["Tasse", "Verre"], ["Pyjama", "Peignoir"],
+  // Jeux, musique, transports
+  ["Ballon", "Frisbee"], ["Puzzle", "Lego"], ["Trottinette", "Skateboard"], ["Vélo", "Moto"],
+  ["Voiture", "Camion"], ["Train", "Métro"], ["Avion", "Hélicoptère"], ["Bateau", "Sous-marin"],
+  ["Guitare", "Piano"], ["Batterie", "Trompette"], ["Cartes à jouer", "Dés"], ["Échecs", "Dames"],
+  ["Toboggan", "Balançoire"], ["Cerf-volant", "Ballon de baudruche"],
+  // Métiers
+  ["Pompier", "Policier"], ["Boulanger", "Pâtissier"], ["Coiffeur", "Barbier"], ["Pilote", "Hôtesse de l'air"],
+  ["Professeur", "Directeur"], ["Cuisinier", "Serveur"], ["Facteur", "Livreur"], ["Plombier", "Électricien"],
+  ["Chanteur", "Rappeur"], ["Acteur", "Humoriste"], ["Astronaute", "Scientifique"], ["Peintre", "Photographe"],
+  ["Youtubeur", "Streamer"], ["Caissier", "Vendeur"], ["Jardinier", "Bûcheron"], ["Vétérinaire", "Fermier"],
+  ["Magicien", "Jongleur"], ["Clown", "Mime"],
+  // Sports
+  ["Football", "Rugby"], ["Tennis", "Ping-pong"], ["Basket", "Handball"], ["Ski", "Snowboard"],
+  ["Natation", "Plongée"], ["Boxe", "Judo"], ["Golf", "Mini-golf"], ["Course à pied", "Marche"],
+  ["Surf", "Planche à voile"], ["Pétanque", "Bowling"], ["Patin à glace", "Roller"], ["Escalade", "Accrobranche"],
+  ["Yoga", "Musculation"], ["Badminton", "Volley"], ["Coupe du monde", "Jeux olympiques"],
+  // Lieux et vacances
+  ["Plage", "Piscine"], ["Montagne", "Colline"], ["Forêt", "Jungle"], ["Désert", "Savane"],
+  ["Camping", "Hôtel"], ["Cinéma", "Théâtre"], ["Restaurant", "Fast-food"], ["Supermarché", "Marché"],
+  ["Zoo", "Aquarium"], ["Parc d'attractions", "Fête foraine"], ["Aéroport", "Gare"], ["Bibliothèque", "Librairie"],
+  ["École", "Université"], ["Paris", "Londres"], ["New York", "Los Angeles"], ["Italie", "Espagne"],
+  ["Japon", "Chine"], ["Mer", "Lac"], ["Château", "Palais"], ["Tour Eiffel", "Statue de la Liberté"],
+  ["Tente", "Caravane"], ["Ascenseur", "Escalator"], ["Grenier", "Cave"], ["Station de ski", "Station balnéaire"],
+  ["Pique-nique", "Barbecue"], ["Croisière", "Road trip"],
+  // Nature et météo
+  ["Neige", "Pluie"], ["Soleil", "Lune"], ["Été", "Hiver"], ["Arc-en-ciel", "Aurore boréale"],
+  ["Tempête", "Orage"], ["Volcan", "Geyser"], ["Feu d'artifice", "Feu de camp"], ["Rose", "Tulipe"],
+  // Applis et actualité
+  ["YouTube", "Netflix"], ["Instagram", "TikTok"], ["WhatsApp", "SMS"], ["Snapchat", "BeReal"],
+  ["Google", "Wikipédia"], ["Spotify", "Deezer"], ["Amazon", "Vinted"], ["iPhone", "Samsung"],
+  ["PlayStation", "Xbox"], ["Mario", "Sonic"], ["Minecraft", "Fortnite"], ["Uber", "Taxi"],
+  ["Airbnb", "Booking"], ["Disney", "Pixar"], ["Harry Potter", "Star Wars"], ["Emoji", "Sticker"],
+  ["Wi-Fi", "Bluetooth"], ["Selfie", "Photo de groupe"], ["Podcast", "Radio"], ["Ordinateur", "Tablette"],
+  ["Écouteurs", "Casque"], ["Chargeur", "Batterie externe"], ["Carte bancaire", "Espèces"], ["Trottinette électrique", "Vélo électrique"],
+  // Fêtes et personnages
+  ["Anniversaire", "Nouvel An"], ["Karaoké", "Concert"], ["Cadeau", "Surprise"], ["Pirate", "Cow-boy"],
+  ["Chevalier", "Viking"], ["Robot", "Extraterrestre"], ["Super-héros", "Ninja"], ["Princesse", "Reine"]
+];
+
+</script>
+<script>
+'use strict';
+// ---------- mémoire de la soirée (noms, points, mots déjà joués) : s'efface après 14 h sans jouer ----------
+const KS = 'opv-soiree', KR = 'opv-reglages';
+function lire(k, def) { try { const v = JSON.parse(localStorage.getItem(k)); return v || def; } catch (e) { return def; } }
+function ecrire(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+let S = lire(KS, null);
+if (!S || Date.now() - (S.t || 0) > 14 * 3600e3) S = { noms: [], points: {}, joues: S ? (S.joues || []) : [], t: Date.now() };
+function sauveS() { S.t = Date.now(); ecrire(KS, S); }
+const R = Object.assign({ n: 6, u: 1, w: 0, boss: false, bouffon: false, fun: false, pts: false }, lire(KR, {}));
+function sauveR() { ecrire(KR, R); }
+
+const app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const alea = n => Math.floor(Math.random() * n);
+const melange = a => { for (let i = a.length - 1; i > 0; i--) { const j = alea(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pench = () => (Math.random() * 6 - 3).toFixed(1);
+const insec = h => h.replace(/ ([!?:])/g, ' $1'); // le « ! » ne part jamais seul à la ligne
+const ICO_PAUSE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/></svg>';
+const ICO_X = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+// pause = pendant une partie seulement (pas à l'accueil, aux réglages, à la fin)
+function ecran(html, pause) {
+  app.innerHTML = '<div class="scr"' + (pause ? ' style="padding-top:44px"' : '') + '>' + insec(html) + '</div>' + (pause ? `<div class="rond pause" id="pause">${ICO_PAUSE}</div>` : '');
+  window.scrollTo(0, 0);
+  if (pause) $('#pause').onclick = menuPause;
+}
+function menuPause() {
+  const ov = document.createElement('div');
+  ov.className = 'ov';
+  const page1 = () => {
+    ov.innerHTML = `<div class="card"><div class="rond" id="fermer" style="align-self:flex-end;margin:-8px -4px 4px 0">${ICO_X}</div>
+      <button class="btn main" id="rec" style="margin-bottom:10px">Recommencer la partie</button></div>`;
+    ov.querySelector('#fermer').onclick = () => ov.remove();
+    ov.querySelector('#rec').onclick = page2;
+  };
+  const page2 = () => {
+    ov.innerHTML = insec(`<div class="card"><div class="h2">Tu es sûr ?</div>
+      <div class="two"><button class="btn" id="non">Non</button><button class="btn main" id="oui">Oui</button></div></div>`);
+    ov.querySelector('#non').onclick = () => ov.remove();
+    ov.querySelector('#oui').onclick = () => { ov.remove(); nouvellePartie(true); };
+  };
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  page1();
+  app.appendChild(ov);
+}
+const $ = s => app.querySelector(s);
+const NOM_ROLE = { civil: 'Civil', under: 'Undercover', white: 'Mr. White', bouffon: 'Bouffon' };
+
+// ---------- accueil ----------
+function accueil() {
+  ecran(`<div class="card logo">On peut<br>voter ?</div><div class="grow"></div>
+    <button class="btn main" id="b1">Un seul téléphone</button>
+    <button class="btn off">Chacun son téléphone</button>`);
+  $('#b1').onclick = reglages;
+}
+
+// ---------- réglages ----------
+const valide = (n, u, w) => u + w >= 1 && n - u - w > u + w;
+function reglages() {
+  const fl = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
+  const pas = (k, lab) => `<div class="row"><span class="l">${lab}</span><span class="step"><button data-k="${k}" data-d="-1">−</button><span class="v" id="v-${k}">${R[k]}</span><button data-k="${k}" data-d="1">+</button></span></div>`;
+  const inter = (k, lab) => `<div class="row" data-t="${k}"><span class="l">${lab}</span><span class="sw ${R[k] ? 'on' : ''}"></span></div>`;
+  ecran(`<div class="back" id="ret">${fl}</div>
+    <div class="rows">
+      ${pas('n', 'Joueurs')}
+      <div id="roles">${pas('u', 'Undercover')}<div style="height:10px"></div>${pas('w', 'Mr. White')}
+        <div class="sec">Rôles bonus</div><div style="height:6px"></div>${inter('boss', 'Boss')}<div style="height:10px"></div>${inter('bouffon', 'Bouffon')}</div>
+      <div style="height:6px"></div>
+      ${inter('fun', 'Mode fun : Tout le monde est Mr. White')}
+      ${inter('pts', 'Points de la soirée')}
+    </div>
+    <div class="warn" id="warn"></div>
+    <div class="grow"></div>
+    <button class="btn main" id="go">C'est parti !</button>`);
+  const maj = () => {
+    for (const k of ['n', 'u', 'w']) $('#v-' + k).textContent = R[k];
+    $('#roles').style.display = R.fun ? 'none' : '';
+    app.querySelectorAll('[data-t]').forEach(el => el.querySelector('.sw').classList.toggle('on', !!R[el.dataset.t]));
+    sauveR();
+  };
+  let tWarn;
+  const alerte = () => { const w = $('#warn'); w.textContent = "Il faut plus de civils que d'Undercover et de Mr. White."; clearTimeout(tWarn); tWarn = setTimeout(() => w.textContent = '', 2500); };
+  app.querySelectorAll('.step button').forEach(b => b.onclick = () => {
+    const k = b.dataset.k, d = +b.dataset.d;
+    if (k === 'n') {
+      const n = Math.min(20, Math.max(3, R.n + d)); R.n = n;
+      while (!valide(R.n, R.u, R.w) && R.w > 0) R.w--;
+      while (!valide(R.n, R.u, R.w) && R.u > 1) R.u--;
+    } else {
+      const t = Object.assign({}, R); t[k] = Math.max(0, t[k] + d);
+      if (t.u + t.w < 1) return;
+      if (!valide(t.n, t.u, t.w)) { alerte(); return; }
+      R[k] = t[k];
+    }
+    maj();
+  });
+  app.querySelectorAll('[data-t]').forEach(el => el.onclick = () => { R[el.dataset.t] = !R[el.dataset.t]; maj(); });
+  maj();
+  $('#ret').onclick = accueil;
+  $('#go').onclick = () => nouvellePartie(false);
+}
+
+// ---------- création d'une partie ----------
+let G = null;
+function tirePaire() {
+  const L = window.OPV_MOTS, garde = Math.min(L.length - 1, Math.floor(L.length * 0.6));
+  let i, essais = 0;
+  do { i = alea(L.length); } while (S.joues.includes(i) && ++essais < 500);
+  S.joues.push(i); while (S.joues.length > garde) S.joues.shift();
+  const p = L[i].slice(); if (Math.random() < .5) p.reverse();
+  return p;
+}
+function nouvellePartie(rejouer) {
+  const n = R.n, roles = Array(n).fill('civil');
+  const idx = melange([...Array(n).keys()]);
+  let k = 0;
+  if (R.fun) roles.fill('white');
+  else {
+    for (let i = 0; i < R.u; i++) roles[idx[k++]] = 'under';
+    for (let i = 0; i < R.w; i++) roles[idx[k++]] = 'white';
+    if (R.bouffon) roles[idx[k++]] = 'bouffon';
+  }
+  const boss = (!R.fun && R.boss) ? alea(n) : -1;
+  const [mc, mu] = tirePaire();
+  G = { joueurs: roles.map((r, i) => ({ nom: S.noms[i] || '', role: r, boss: i === boss, vivant: true })),
+        motC: mc, motU: mu, i: 0, fun: R.fun, pts: R.pts && !R.fun, rejouer };
+  sauveS();
+  saisie();
+}
+const motDe = j => j.role === 'under' ? G.motU : j.role === 'white' ? '' : G.motC;
+
+// ---------- distribution sur un seul téléphone ----------
+function saisie() {
+  const j = G.joueurs[G.i];
+  ecran(`<div class="mid">
+      <div class="h2">Joueur ${G.i + 1}</div>
+      <input id="nom" maxlength="16" placeholder="Ton prénom" value="${esc(j.nom)}" autocomplete="off" autocapitalize="words" enterkeyhint="go">
+    </div>
+    <button class="btn main" id="voir">Voir mon mot</button>`, true);
+  const inp = $('#nom');
+  if (!j.nom) setTimeout(() => inp.focus(), 350);
+  const ok = () => {
+    const v = inp.value.trim();
+    if (!v) { inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); inp.focus(); return; }
+    j.nom = v; S.noms[G.i] = v; sauveS(); inp.blur(); monMot();
+  };
+  $('#voir').onclick = ok;
+  inp.onkeydown = e => { if (e.key === 'Enter') ok(); };
+}
+function monMot() {
+  const j = G.joueurs[G.i];
+  let face;
+  if (j.role === 'white') face = `<div class="h2">Tu es Mr. White</div><div class="txt" style="margin-top:10px">Tu n'as pas de mot. Écoute les autres et fais semblant !</div>`;
+  else face = `<div class="txt">Ton mot</div><div class="word">${esc(motDe(j))}</div>`;
+  let extra = '';
+  if (j.role === 'bouffon') extra += `<div class="chip" style="transform:rotate(${pench()}deg)"><b>Tu es le Bouffon</b><span>Fais-toi éliminer pour gagner !</span></div>`;
+  if (j.boss) extra += `<div class="chip" style="transform:rotate(${pench()}deg)"><b>Tu es le Boss</b><span>En cas d'égalité, c'est toi qui tranches</span></div>`;
+  ecran(`<div class="top">${esc(j.nom)}</div>
+    <div class="mid">
+      <div class="stage" style="height:280px;transform:rotate(${pench()}deg)"><div class="flip" id="f">
+        <div class="face back"></div>
+        <div class="face front" style="background:var(--card);color:var(--ink)">${face}</div>
+      </div></div>
+      <div class="later" id="ex" style="display:flex;flex-direction:column;gap:10px;align-items:center">${extra}</div>
+    </div>
+    <button class="btn main" id="cacher">Cacher</button>`, true);
+  const f = $('#f'), ex = $('#ex');
+  requestAnimationFrame(() => setTimeout(() => { f.classList.add('on'); setTimeout(() => ex.classList.add('show'), 350); }, 60));
+  $('#cacher').onclick = () => {
+    G.i++;
+    if (G.i >= G.joueurs.length) return debut();
+    ecran(`<div class="mid"><div class="card" style="width:200px;height:250px;transform:rotate(${pench()}deg)"><div class="h2">Passe le téléphone au joueur suivant</div></div></div>
+      <button class="btn main" id="moi">C'est moi !</button>`, true);
+    $('#moi').onclick = saisie;
+  };
+}
+
+// ---------- début du tour : qui commence ----------
+const CHANCE_SPECIALE = 0.065;
+function debut() {
+  const v = G.joueurs.map((j, i) => i);
+  const blancs = v.filter(i => G.joueurs[i].role === 'white'), autres = v.filter(i => G.joueurs[i].role !== 'white');
+  let p;
+  if (G.fun || !autres.length) p = alea(v.length);
+  else if (blancs.length && Math.random() < CHANCE_SPECIALE) p = blancs[alea(blancs.length)];
+  else p = autres[alea(autres.length)];
+  ecran(`<div class="mid">
+      <div class="h1">Tout le monde a son mot !</div>
+      <div class="card" style="width:230px;padding:26px 14px;transform:rotate(${pench()}deg)"><div class="word" style="font-size:30px">${esc(G.joueurs[p].nom)} commence</div></div>
+      <div class="txt">Puis dans le sens des aiguilles d'une montre</div>
+    </div>
+    <button class="btn main" id="vote">On peut voter ?</button>`, true);
+  $('#vote').onclick = vote;
+}
+
+// ---------- vote ----------
+function vote() {
+  ecran(`<div class="h1" style="margin-top:6px">Qui est éliminé ?</div>
+    <div class="list">${G.joueurs.map((j, i) => `<div class="pl ${j.vivant ? '' : 'out'}" data-i="${i}" style="transform:rotate(${pench() / 2}deg)">${esc(j.nom)}</div>`).join('')}</div>
+    <div class="grow"></div>`, true);
+  app.querySelectorAll('.pl').forEach(el => el.onclick = () => confirmer(+el.dataset.i));
+}
+function confirmer(i) {
+  const j = G.joueurs[i];
+  const ov = document.createElement('div');
+  ov.className = 'ov';
+  ov.innerHTML = insec(`<div class="card"><div class="h2">Tu es sûr ? ${esc(j.nom)} est éliminé.</div>
+    <div class="two"><button class="btn" id="non">Non</button><button class="btn main" id="oui">Oui</button></div></div>`);
+  app.appendChild(ov);
+  ov.querySelector('#non').onclick = () => ov.remove();
+  ov.querySelector('#oui').onclick = () => { ov.remove(); reveler(i); };
+}
+
+// ---------- révélation façon ouverture de pack ----------
+function reveler(i) {
+  const j = G.joueurs[i];
+  j.vivant = false;
+  const mot = motDe(j);
+  ecran(`<div class="top">${esc(j.nom)} était…</div>
+    <div class="mid"><div class="stage" id="st"><div class="flip" id="f">
+      <div class="face back" id="dos"></div>
+      <div class="face front r-${j.role}"><div class="rn">${NOM_ROLE[j.role]}</div>${mot ? `<div class="rw">${esc(mot)}</div>` : ''}</div>
+    </div></div></div>
+    <button class="btn main later" id="suite" style="pointer-events:none">Continuer</button>`, true);
+  const st = $('#st'), f = $('#f'), b = $('#suite');
+  st.classList.add('charge');
+  setTimeout(() => {
+    st.classList.remove('charge'); st.style.transform = `rotate(${pench()}deg)`;
+    f.classList.add('on');
+    setTimeout(() => { st.classList.add('pop'); b.classList.add('show'); b.style.pointerEvents = ''; }, 650);
+  }, 1900);
+  $('#suite').onclick = () => apres(j);
+}
+function apres(j) {
+  if (j.role === 'bouffon') return fin('bouffon', j);
+  if (j.role === 'white' && !G.fun) {
+    ecran(`<div class="mid"><div class="card" style="width:240px;padding:30px 16px;transform:rotate(${pench()}deg)"><div class="h2">Mr. White, devine le mot !</div></div></div>
+      <div class="two"><button class="btn" id="rate">Raté</button><button class="btn main" id="trouve">Il a trouvé</button></div>`, true);
+    $('#trouve').onclick = () => fin('whiteDevine', j);
+    $('#rate').onclick = () => verifier();
+    return;
+  }
+  verifier();
+}
+function verifier() {
+  const v = G.joueurs.filter(j => j.vivant);
+  if (G.fun) return v.length <= 1 ? fin('fun') : continuer();
+  const infiltres = v.filter(j => j.role === 'under' || j.role === 'white');
+  if (!infiltres.length) return fin('civils');
+  if (v.length - infiltres.length <= 1) return fin(infiltres.some(j => j.role === 'under') ? 'under' : 'white');
+  continuer();
+}
+function continuer() {
+  ecran(`<div class="mid"><div class="h1">La partie continue</div></div>
+    <button class="btn main" id="vote">On peut voter ?</button>`, true);
+  $('#vote').onclick = vote;
+}
+
+// ---------- fin de partie ----------
+function fin(qui, j) {
+  const T = { civils: 'Les civils gagnent !', under: 'Les Undercover gagnent !', white: 'Mr. White gagne !', whiteDevine: 'Mr. White gagne !', bouffon: 'Le Bouffon gagne !', fun: '' };
+  if (G.pts) {
+    const add = (nom, p) => S.points[nom] = (S.points[nom] || 0) + p;
+    G.joueurs.forEach(x => {
+      if (qui === 'civils' && x.role === 'civil') add(x.nom, 1);
+      if ((qui === 'under' || qui === 'white') && x.role === 'under') add(x.nom, 3);
+      if ((qui === 'under' || qui === 'white') && x.role === 'white') add(x.nom, 3);
+    });
+    if (qui === 'whiteDevine') add(j.nom, 4);
+    if (qui === 'bouffon') add(j.nom, 4);
+  }
+  sauveS();
+  const mots = qui === 'whiteDevine' ? `<div class="txt">Le mot était : <b>${esc(G.motC)}</b></div>`
+    : G.fun ? '' : `<div class="txt">Mot des civils : <b>${esc(G.motC)}</b></div>` + (G.joueurs.some(x => x.role === 'under') ? `<div class="txt" style="margin-top:-10px">Mot des Undercover : <b>${esc(G.motU)}</b></div>` : '');
+  ecran(`<div class="mid">
+      ${T[qui] ? `<div class="card pop" style="padding:22px 18px;transform:rotate(${pench()}deg)"><div class="h1">${T[qui]}</div></div>` : ''}
+      ${mots}
+      <div class="who">${G.joueurs.map(x => `<span class="tag r-${x.role} ${x.vivant ? '' : 'dead'}">${esc(x.nom)} · ${NOM_ROLE[x.role]}</span>`).join('')}</div>
+    </div>
+    <button class="btn main" id="rejouer">Rejouer</button>
+    <button class="btn" id="nouv">Nouvelle partie</button>
+    ${G.pts ? '<button class="btn" id="soir">Fin de soirée</button>' : ''}`);
+  $('#rejouer').onclick = () => nouvellePartie(true);
+  $('#nouv').onclick = reglages;
+  if ($('#soir')) $('#soir').onclick = podium;
+}
+
+// ---------- podium de la soirée ----------
+function podium() {
+  const cl = Object.entries(S.points).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const ordre = [1, 0, 2], haut = [210, 150, 105];
+  const max = Math.max(1, ...cl.map(c => c[1]));
+  ecran(`<div class="h1" style="margin-top:10px">Le podium de la soirée</div>
+    <div class="mid"><div class="podium">${ordre.map(r => cl[r] ? `<div class="pod ${r === 0 ? 'g' : ''}"><div class="n">${esc(cl[r][0])}</div><div class="p">${cl[r][1]} pts</div><div class="b" data-h="${haut[r]}">${r + 1}</div></div>` : '').join('')}</div></div>
+    <button class="btn main" id="nouv">Nouvelle partie</button>`);
+  app.querySelectorAll('.pod .b').forEach((b, k) => setTimeout(() => b.style.height = b.dataset.h + 'px', 250 + k * 250));
+  S = { noms: [], points: {}, joues: S.joues, t: Date.now() }; sauveS();
+  $('#nouv').onclick = reglages;
+}
+
+window.addEventListener('error', e => {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;background:#fff;color:#000;border:2px solid #000;border-radius:12px;padding:10px;font:13px monospace;z-index:9';
+  d.textContent = 'Erreur (fais une capture pour Xray) : ' + e.message + ' ligne ' + e.lineno;
+  document.body.appendChild(d);
+});
+accueil();
+</script>
+
+<script>
+// fonctionne aussi sans connexion une fois ouvert une première fois
+if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>
