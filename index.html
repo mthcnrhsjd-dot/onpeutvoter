@@ -220,15 +220,18 @@ function menuPause() {
   ov.className = 'ov';
   const page1 = () => {
     ov.innerHTML = `<div class="card"><div class="rond" id="fermer" style="align-self:flex-end;margin:-8px -4px 4px 0">${ICO_X}</div>
-      <button class="btn main" id="rec" style="margin-bottom:10px">Recommencer la partie</button></div>`;
+      <button class="btn main" id="rec">Recommencer la partie</button>
+      <button class="btn" id="menu" style="margin-bottom:10px">Retourner au menu</button></div>`;
     ov.querySelector('#fermer').onclick = () => ov.remove();
-    ov.querySelector('#rec').onclick = page2;
+    // les deux effacent les prénoms (gardés seulement avec « Rejouer »)
+    ov.querySelector('#rec').onclick = () => page2(() => nouvellePartie(false));
+    ov.querySelector('#menu').onclick = () => page2(reglages);
   };
-  const page2 = () => {
+  const page2 = suite => {
     ov.innerHTML = insec(`<div class="card"><div class="h2">Tu es sûr ?</div>
       <div class="two"><button class="btn" id="non">Non</button><button class="btn main" id="oui">Oui</button></div></div>`);
     ov.querySelector('#non').onclick = () => ov.remove();
-    ov.querySelector('#oui').onclick = () => { ov.remove(); nouvellePartie(true); };
+    ov.querySelector('#oui').onclick = () => { ov.remove(); suite(); };
   };
   ov.onclick = e => { if (e.target === ov) ov.remove(); };
   page1();
@@ -313,7 +316,7 @@ function nouvellePartie(rejouer) {
   }
   const boss = (!R.fun && R.boss) ? alea(n) : -1;
   const [mc, mu] = tirePaire();
-  G = { joueurs: roles.map((r, i) => ({ nom: S.noms[i] || '', role: r, boss: i === boss, vivant: true })),
+  G = { joueurs: roles.map((r, i) => ({ nom: rejouer ? (S.noms[i] || '') : '', role: r, boss: i === boss, vivant: true })),
         motC: mc, motU: mu, i: 0, fun: R.fun, pts: R.pts && !R.fun, rejouer };
   sauveS();
   saisie();
@@ -406,11 +409,10 @@ function confirmer(i) {
 function reveler(i) {
   const j = G.joueurs[i];
   j.vivant = false;
-  const mot = motDe(j);
   ecran(`<div class="top">${esc(j.nom)} était…</div>
     <div class="mid"><div class="stage" id="st"><div class="flip" id="f">
       <div class="face back" id="dos"></div>
-      <div class="face front r-${j.role}"><div class="rn">${NOM_ROLE[j.role]}</div>${mot ? `<div class="rw">${esc(mot)}</div>` : ''}</div>
+      <div class="face front r-${j.role}"><div class="rn">${NOM_ROLE[j.role]}</div></div>
     </div></div></div>
     <button class="btn main later" id="suite" style="pointer-events:none">Continuer</button>`, true);
   const st = $('#st'), f = $('#f'), b = $('#suite');
