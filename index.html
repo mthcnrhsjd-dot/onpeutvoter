@@ -22,7 +22,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
 .grow{flex:1}
 .mid{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 .btn{display:block;width:100%;border:2.5px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);
-  font:800 18px/1 inherit;font-family:inherit;padding:16px 0;margin-top:10px;cursor:pointer;transition:transform .1s}
+  font-family:inherit;font-weight:800;font-size:18px;line-height:1;padding:16px 0;margin-top:10px;cursor:pointer;transition:transform .1s}
 .btn:active{transform:scale(.97)}
 .btn.main{background:var(--ink);color:var(--onink)}
 .btn.off{opacity:.3;pointer-events:none}
@@ -38,7 +38,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
 .chip{border:2.5px solid var(--line);border-radius:14px;background:var(--card);padding:9px 14px;text-align:center;max-width:280px}
 .chip b{display:block;font-size:17px;font-weight:800}
 .chip span{font-size:14px;color:var(--soft)}
-input{width:100%;font:700 22px inherit;font-family:inherit;text-align:center;color:var(--ink);background:var(--card);
+input{width:100%;font-family:inherit;font-weight:700;font-size:22px;text-align:center;color:var(--ink);background:var(--card);
   border:3px solid var(--line);border-radius:18px;padding:16px;outline:none;-webkit-user-select:text;user-select:text}
 input::placeholder{color:var(--soft);opacity:.6}
 .shake{animation:shake .35s}
@@ -50,7 +50,7 @@ input::placeholder{color:var(--soft);opacity:.6}
 .row .l{font-size:18px;font-weight:800}
 .step{display:flex;align-items:center;gap:6px}
 .step button{width:42px;height:42px;border-radius:50%;border:2.5px solid var(--line);background:transparent;color:var(--ink);
-  font:800 22px/1 inherit;font-family:inherit;padding:0;cursor:pointer}
+  font-family:inherit;font-weight:800;font-size:22px;line-height:1;padding:0;cursor:pointer}
 .step button:active{transform:scale(.9)}
 .step .v{min-width:36px;text-align:center;font-size:22px;font-weight:800}
 .sw{width:56px;height:34px;border-radius:999px;border:2.5px solid var(--line);position:relative;background:transparent;transition:background .2s;flex:none}
@@ -104,6 +104,18 @@ input::placeholder{color:var(--soft);opacity:.6}
 .pod .b{width:100%;border:3px solid var(--line);border-radius:16px 16px 0 0;background:var(--card);display:flex;justify-content:center;padding-top:8px;
   font-size:30px;font-weight:800;height:0;transition:height 1s cubic-bezier(.3,1.3,.5,1)}
 .pod.g .b{background:var(--gold);color:#1C1C1E}
+/* chacun son téléphone */
+.code{font-size:46px;font-weight:800;letter-spacing:8px;line-height:1.1;margin-top:4px}
+input.cd:not(:placeholder-shown){text-transform:uppercase;letter-spacing:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;margin-top:8px}
+.chip2{border:2.5px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:800;font-size:16px;background:var(--card);display:flex;align-items:center;gap:8px}
+.chip2 .x{display:flex;cursor:pointer;margin-right:-4px;opacity:.6}
+.vls{width:100%;display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.vl{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;border:2.5px solid var(--line);border-radius:16px;background:var(--card);padding:12px 16px;font-size:18px}
+.vl b:last-child{text-align:right}.vl span{color:var(--soft);font-weight:700}
+.decompte{font-size:64px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.ovc{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;gap:12px}
+#net{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--onink);padding:8px 14px;border-radius:999px;font-weight:700;font-size:14px;z-index:8;pointer-events:none;white-space:nowrap}
 </style>
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="On peut voter">
@@ -189,6 +201,7 @@ window.OPV_MOTS = [
 ];
 
 </script>
+<script>if (/[?&]srv=local/.test(location.search)) document.write('<script src="serveur/partie.js"><\/script>');</script>
 <script>
 'use strict';
 // ---------- mémoire de la soirée (noms, points, mots déjà joués) : s'efface après 14 h sans jouer ----------
@@ -198,7 +211,7 @@ function ecrire(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catc
 let S = lire(KS, null);
 if (!S || Date.now() - (S.t || 0) > 14 * 3600e3) S = { noms: [], points: {}, joues: S ? (S.joues || []) : [], t: Date.now() };
 function sauveS() { S.t = Date.now(); ecrire(KS, S); }
-const R = Object.assign({ n: 6, u: 1, w: 0, boss: false, bouffon: false, fun: false, pts: false }, lire(KR, {}));
+const R = Object.assign({ n: 6, u: 1, w: 0, boss: false, bouffon: false, fun: false, pts: false, anon: false }, lire(KR, {}));
 function sauveR() { ecrire(KR, R); }
 
 const app = document.getElementById('app');
@@ -223,6 +236,16 @@ function menuPause() {
       <button class="btn main" id="rec">Recommencer la partie</button>
       <button class="btn" id="menu" style="margin-bottom:10px">Retourner au menu</button></div>`;
     ov.querySelector('#fermer').onclick = () => ov.remove();
+    if (M) { // chacun son téléphone
+      if (M && E && E.hote) {
+        ov.querySelector('#rec').onclick = () => page2(hoteLancer);
+        ov.querySelector('#menu').onclick = () => page2(() => action('salon'));
+      } else {
+        ov.querySelector('#rec').remove(); ov.querySelector('#menu').className = 'btn main';
+        ov.querySelector('#menu').onclick = () => page2(() => { action('quitter'); quitteM(); accueil(); });
+      }
+      return;
+    }
     // les deux effacent les prénoms (gardés seulement avec « Rejouer »)
     ov.querySelector('#rec').onclick = () => page2(() => nouvellePartie(false));
     ov.querySelector('#menu').onclick = () => page2(reglages);
@@ -244,17 +267,18 @@ const NOM_ROLE = { civil: 'Civil', under: 'Undercover', white: 'Mr. White', bouf
 function accueil() {
   ecran(`<div class="card logo">On peut<br>voter ?</div><div class="grow"></div>
     <button class="btn main" id="b1">Un seul téléphone</button>
-    <button class="btn off">Chacun son téléphone</button>`);
+    <button class="btn" id="b2">Chacun son téléphone</button>`);
   $('#b1').onclick = reglages;
+  $('#b2').onclick = mAccueil;
 }
 
 // ---------- réglages ----------
 const valide = (n, u, w) => u + w >= 1 && n - u - w > u + w;
+const FL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
 function reglages() {
-  const fl = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
   const pas = (k, lab) => `<div class="row"><span class="l">${lab}</span><span class="step"><button data-k="${k}" data-d="-1">−</button><span class="v" id="v-${k}">${R[k]}</span><button data-k="${k}" data-d="1">+</button></span></div>`;
   const inter = (k, lab) => `<div class="row" data-t="${k}"><span class="l">${lab}</span><span class="sw ${R[k] ? 'on' : ''}"></span></div>`;
-  ecran(`<div class="back" id="ret">${fl}</div>
+  ecran(`<div class="back" id="ret">${FL}</div>
     <div class="rows">
       ${pas('n', 'Joueurs')}
       <div id="roles">${pas('u', 'Undercover')}<div style="height:10px"></div>${pas('w', 'Mr. White')}
@@ -491,6 +515,420 @@ function podium() {
   $('#nouv').onclick = reglages;
 }
 
+// ================= CHACUN SON TÉLÉPHONE =================
+// Les téléphones parlent à un petit script Google (serveur/partie.js) toutes les 2 secondes.
+const SRV_URL = 'https://script.google.com/macros/s/AKfycbxBEw9atqIu-eLd5YsvR2NuSZv3e8jS15MQof2gRj9ScPknFxwYPoZ7svsc2bnlPuxh/exec'; // adresse du script Google (projet « On peut voter »)
+const PARAMS = new URLSearchParams(location.search);
+const EN_LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const SRV = (EN_LOCAL && PARAMS.get('srv')) || SRV_URL;
+const KM = 'opv-salle' + (EN_LOCAL ? (PARAMS.get('p') || '') : '');
+const magasinTest = { lire: c => lire('opv-test-' + c, null), ecrire: (c, s) => ecrire('opv-test-' + c, s) };
+async function appel(q) {
+  if (SRV === 'local') {
+    await new Promise(r => setTimeout(r, 150));
+    if (window.OPV_PANNE) throw new Error('panne');
+    return JSON.parse(JSON.stringify(OPV_SERVEUR.traite(JSON.parse(JSON.stringify(q)), magasinTest, Date.now())));
+  }
+  if (!SRV) throw new Error('pas de serveur');
+  const r = await fetch(SRV + '?q=' + encodeURIComponent(JSON.stringify(q)) + '&t=' + Date.now(), { cache: 'no-store' });
+  return r.json();
+}
+let M = lire(KM, null), E = null, boucle = 0, tPoll = 0, echecs = 0, cle = '', majE = null;
+function sauveM() { ecrire(KM, M); }
+function quitteM() { M = null; E = null; cle = ''; majE = null; boucle++; clearTimeout(tPoll); try { localStorage.removeItem(KM); } catch (e) {} reseauOk(); }
+function reseauOk() { echecs = 0; const n = document.getElementById('net'); if (n) n.remove(); }
+function reseauKo() {
+  if (++echecs < 2 || document.getElementById('net')) return;
+  const n = document.createElement('div'); n.id = 'net'; n.textContent = 'Pas de connexion, on réessaie…'; document.body.appendChild(n);
+}
+async function action(a, extra) {
+  if (!M) return;
+  const m = M;
+  try { const r = await appel(Object.assign({ a, code: m.code, id: m.id, tok: m.tok }, extra)); if (m === M) { reseauOk(); recu(r); } }
+  catch (e) { reseauKo(); }
+}
+function demarre() { boucle++; clearTimeout(tPoll); tick(boucle); }
+async function tick(b) {
+  if (!M || b !== boucle) return;
+  const m = M;
+  try { const r = await appel({ a: 'etat', code: m.code, id: m.id, tok: m.tok, v: E ? E.v : 0 }); if (m === M) { reseauOk(); recu(r); } }
+  catch (e) { reseauKo(); }
+  if (M && b === boucle) tPoll = setTimeout(() => tick(b), document.hidden ? 6000 : 2000);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && M) demarre(); });
+function recu(r) {
+  if (!r) return;
+  if (r.err === 'code' && !r.etat) { quitteM(); return accueil(); } // partie disparue ou joueur retiré
+  if (r.pareil || !r.etat) return;
+  if (E && r.etat.v < E.v) return;
+  E = r.etat;
+  affiche();
+}
+// choisit l'écran ; si c'est le même qu'avant, on met juste à jour (compteur de votes, liste des joueurs)
+function affiche() {
+  const e = E, p = e.phase, t = e.partie + '-' + e.tour;
+  let k, f;
+  if (p === 'salon' || !e.moi.enJeu) { k = 'salon' + (e.moi.enJeu ? '' : 'x'); f = mSalon; }
+  else if (p === 'mots') { k = 'mots' + e.partie + (e.moi.vu ? 'v' : ''); f = mMots; }
+  else if (p === 'debut') { k = 'debut' + e.partie; f = mDebut; }
+  else if (p === 'vote') { k = 'vote' + e.partie + '-' + e.scrutin + (e.aVote || !e.moi.vivant ? 'a' : ''); f = mVote; }
+  else if (p === 'votes') { k = 'votes' + e.partie + '-' + e.scrutin; f = mVotes; }
+  else if (p === 'boss') { k = 'boss' + e.partie + '-' + e.scrutin; f = mBoss; }
+  else if (p === 'revele') { k = p + t; f = mRevele; }
+  else if (p === 'mrw') { k = p + t; f = mMrw; }
+  else if (p === 'mrwJuge') { k = p + t; f = mJuge; }
+  else if (p === 'mrwRate') { k = p + t; f = mRate; }
+  else if (p === 'transfert') { k = p + t; f = mTransfert; }
+  else if (p === 'suite') { k = p + t; f = mSuite; }
+  else if (p === 'fin') { k = p + e.partie; f = mFin; }
+  else if (p === 'podium') { k = p + e.partie; f = mPodium; }
+  else return;
+  if (k === cle && majE) return majE(e);
+  cle = k; majE = f(e) || null;
+}
+function confirme(texte, suite) {
+  const ov = document.createElement('div');
+  ov.className = 'ov';
+  ov.innerHTML = insec(`<div class="card"><div class="h2">${texte}</div>
+    <div class="two"><button class="btn" id="non">Non</button><button class="btn main" id="oui">Oui</button></div></div>`);
+  app.appendChild(ov);
+  ov.querySelector('#non').onclick = () => ov.remove();
+  ov.querySelector('#oui').onclick = () => { ov.remove(); suite(); };
+}
+function hoteLancer() {
+  const [mc, mu] = tirePaire(); sauveS();
+  action('lancer', { reglages: { u: R.u, w: R.w, boss: R.boss, bouffon: R.bouffon, fun: R.fun, pts: R.pts, anon: R.anon }, motC: mc, motU: mu });
+}
+const nomDe = id => { const j = E.joueurs.find(x => x.id === id); return j ? j.nom : ''; };
+const grille = (ids, attr) => `<div class="list">${ids.map(id => `<div class="pl" ${attr}="${id}" style="transform:rotate(${pench() / 2}deg)">${esc(nomDe(id))}</div>`).join('')}</div>`;
+const btnHote = (id, label) => E.hote ? `<button class="btn main" id="${id}">${label}</button>` : '';
+const btnRevoir = () => `<button class="btn" id="revoir">Revoir mon mot</button>`;
+function brancheRevoir() { const b = $('#revoir'); if (b) b.onclick = revoir; }
+function carteMot(m) {
+  const face = m.role === 'white'
+    ? `<div class="h2">Tu es Mr. White</div><div class="txt" style="margin-top:10px">Tu n'as pas de mot. Écoute les autres et fais semblant !</div>`
+    : `<div class="txt">Ton mot</div><div class="word">${esc(m.mot)}</div>`;
+  let extra = '';
+  if (m.role === 'bouffon') extra += `<div class="chip" style="transform:rotate(${pench()}deg)"><b>Tu es le Bouffon</b><span>Fais-toi éliminer pour gagner !</span></div>`;
+  if (m.boss) extra += chipBoss();
+  return { face, extra };
+}
+const chipBoss = () => `<div class="chip" style="transform:rotate(${pench()}deg)"><b>Tu es le Boss</b><span>En cas d'égalité, c'est toi qui tranches</span></div>`;
+function revoir() {
+  const c = carteMot(E.moi);
+  const ov = document.createElement('div');
+  ov.className = 'ov';
+  ov.innerHTML = insec(`<div class="ovc"><div class="card big" style="transform:rotate(${pench()}deg)">${c.face}</div>${c.extra}
+    <button class="btn main" id="ca">Cacher</button></div>`);
+  app.appendChild(ov);
+  ov.querySelector('#ca').onclick = () => ov.remove();
+}
+// compte à rebours affiché (le vrai minuteur est chez Google)
+function decompte(ms, fini) {
+  const finA = Date.now() + ms, dc = $('#dc');
+  const t = setInterval(() => {
+    if (!document.body.contains(dc)) return clearInterval(t);
+    const s = Math.max(0, Math.ceil((finA - Date.now()) / 1000));
+    dc.textContent = s;
+    if (s <= 0) { clearInterval(t); if (fini) fini(); }
+  }, 200);
+  dc.textContent = Math.ceil(ms / 1000);
+}
+
+// ---------- créer / rejoindre ----------
+function mAccueil() {
+  ecran(`<div class="back" id="ret">${FL}</div>
+    <div class="mid"><div class="card logo" style="margin-top:0">On peut<br>voter ?</div></div>
+    <button class="btn main" id="cr">Créer une partie</button>
+    <button class="btn" id="rj">Rejoindre une partie</button>`);
+  $('#ret').onclick = accueil;
+  $('#cr').onclick = () => mEntree(false);
+  $('#rj').onclick = () => mEntree(true, '');
+}
+function mEntree(rejoindre, codeDonne) {
+  ecran(`<div class="back" id="ret">${FL}</div>
+    <div class="mid">
+      ${rejoindre ? `<input id="code" class="cd" maxlength="4" placeholder="Code de la partie" value="${esc(codeDonne || '')}" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">` : ''}
+      <input id="nom" maxlength="16" placeholder="Ton prénom" autocomplete="off" autocapitalize="words" enterkeyhint="go">
+      <div class="warn" id="warn"></div>
+    </div>
+    <button class="btn main" id="ok">${rejoindre ? 'Rejoindre' : 'Créer une partie'}</button>`);
+  const inCode = $('#code'), inNom = $('#nom'), warn = $('#warn'), ok = $('#ok');
+  $('#ret').onclick = mAccueil;
+  if (inCode) inCode.oninput = () => { inCode.value = inCode.value.toUpperCase().replace(/[^A-Z]/g, ''); };
+  setTimeout(() => (inCode && inCode.value.length < 4 ? inCode : inNom).focus(), 350);
+  const secoue = el => { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); el.focus(); };
+  let envoi = false;
+  const go = async () => {
+    if (envoi) return;
+    const code = inCode ? inCode.value : '', nom = inNom.value.trim();
+    if (inCode && code.length !== 4) return secoue(inCode);
+    if (!nom) return secoue(inNom);
+    envoi = true; ok.classList.add('off'); warn.textContent = '';
+    let r = null;
+    for (let essai = 0; essai < 4 && !r; essai++) {
+      try { r = await appel(rejoindre ? { a: 'rejoindre', code, nom } : { a: 'creer', nom }); }
+      catch (e) { warn.textContent = 'Pas de connexion, on réessaie…'; await new Promise(z => setTimeout(z, 2000)); }
+    }
+    envoi = false; ok.classList.remove('off');
+    if (!r) return;
+    if (r.err === 'code') { warn.textContent = 'Code introuvable'; return secoue(inCode || inNom); }
+    if (r.err === 'pris') { warn.textContent = 'Ce prénom est déjà pris'; return secoue(inNom); }
+    if (!r.ok) return secoue(inNom);
+    inNom.blur(); if (inCode) inCode.blur();
+    M = { code: r.code, id: r.id, tok: r.tok }; sauveM();
+    if (PARAMS.get('code')) { PARAMS.delete('code'); history.replaceState(null, '', location.pathname + (PARAMS.toString() ? '?' + PARAMS : '')); }
+    E = null; cle = ''; recu(r); demarre();
+  };
+  ok.onclick = go;
+  inNom.onkeydown = e => { if (e.key === 'Enter') go(); };
+  if (inCode) inCode.onkeydown = e => { if (e.key === 'Enter') inNom.focus(); };
+}
+async function partageLien() {
+  const url = location.origin + location.pathname + '?code=' + E.code;
+  try { if (navigator.share) { await navigator.share({ url }); return; } } catch (e) { return; }
+  try { await navigator.clipboard.writeText(url); } catch (e) {}
+}
+
+// ---------- salon : le code, les joueurs, les réglages (maître) ----------
+function mSalon(e) {
+  const h = e.hote && e.phase === 'salon';
+  const pas = (k, lab) => `<div class="row"><span class="l">${lab}</span><span class="step"><button data-k="${k}" data-d="-1">−</button><span class="v" id="v-${k}">${R[k]}</span><button data-k="${k}" data-d="1">+</button></span></div>`;
+  const inter = (k, lab) => `<div class="row" data-t="${k}"><span class="l">${lab}</span><span class="sw ${R[k] ? 'on' : ''}"></span></div>`;
+  ecran(`<div class="back" id="ret">${FL}</div>
+    <div class="card" style="padding:12px 30px 14px;transform:rotate(-2deg);margin-top:-28px"><div class="txt">Code de la partie</div><div class="code">${esc(e.code)}</div></div>
+    ${h ? '<button class="btn" id="lien" style="margin-top:16px">Envoyer le lien</button>' : ''}
+    <div class="sec" style="margin-top:18px">Joueurs connectés</div>
+    <div class="chips" id="liste"></div>
+    ${h ? `<div class="rows">
+      <div id="roles">${pas('u', 'Undercover')}<div style="height:10px"></div>${pas('w', 'Mr. White')}
+        <div class="sec">Rôles bonus</div><div style="height:6px"></div>${inter('boss', 'Boss')}<div style="height:10px"></div>${inter('bouffon', 'Bouffon')}</div>
+      <div style="height:6px"></div>
+      ${inter('fun', 'Mode fun : Tout le monde est Mr. White')}
+      ${inter('pts', 'Points de la soirée')}
+      ${inter('anon', 'Vote anonyme')}
+    </div>
+    <div class="warn" id="warn"></div>
+    <div class="grow"></div>
+    <button class="btn main" id="go">Lancer</button>`
+    : `<div class="grow"></div><div class="txt" style="margin:24px 0 10px">En attente du maître du jeu…</div><div class="grow"></div>`}`);
+  $('#ret').onclick = () => confirme('Tu es sûr ?', () => { if (!E.hote) action('quitter'); quitteM(); accueil(); });
+  const maj = e => {
+    E = e;
+    const ici = E.moi.id, peutRetirer = E.hote && E.phase === 'salon';
+    $('#liste').innerHTML = E.joueurs.map(j => `<span class="chip2">${esc(j.nom)}${peutRetirer && j.id !== ici ? `<span class="x" data-x="${j.id}">${ICO_X}</span>` : ''}</span>`).join('');
+    app.querySelectorAll('[data-x]').forEach(x => x.onclick = () => action('retirer', { cible: x.dataset.x }));
+    if (!h) return;
+    const n = E.joueurs.length, bon = n >= 3 && (R.fun || valide(n, R.u, R.w));
+    for (const k of ['u', 'w']) $('#v-' + k).textContent = R[k];
+    $('#roles').style.display = R.fun ? 'none' : '';
+    app.querySelectorAll('[data-t]').forEach(el => el.querySelector('.sw').classList.toggle('on', !!R[el.dataset.t]));
+    $('#warn').textContent = n >= 3 && !bon ? "Il faut plus de civils que d'Undercover et de Mr. White." : '';
+    $('#go').classList.toggle('off', !bon);
+    sauveR();
+  };
+  if (h) {
+    $('#lien').onclick = partageLien;
+    app.querySelectorAll('.step button').forEach(b => b.onclick = () => {
+      const k = b.dataset.k, v = Math.min(9, Math.max(0, R[k] + +b.dataset.d));
+      if (k === 'u' ? v + R.w < 1 : R.u + v < 1) return;
+      R[k] = v; maj(E);
+    });
+    app.querySelectorAll('[data-t]').forEach(el => el.onclick = () => { R[el.dataset.t] = !R[el.dataset.t]; maj(E); });
+    $('#go').onclick = hoteLancer;
+  }
+  maj(e);
+  return maj;
+}
+
+// ---------- les mots ----------
+function mMots(e) {
+  if (e.moi.vu) {
+    ecran(`<div class="mid"><div class="card" style="width:220px;padding:30px 16px;transform:rotate(${pench()}deg)"><div class="h2">En attente des autres joueurs…</div></div></div>
+      ${btnRevoir()}`, true);
+    brancheRevoir();
+    return;
+  }
+  const c = carteMot(e.moi);
+  ecran(`<div class="top">${esc(e.moi.nom)}</div>
+    <div class="mid">
+      <div class="stage" style="height:280px;transform:rotate(${pench()}deg)"><div class="flip" id="f">
+        <div class="face back"></div>
+        <div class="face front" style="background:var(--card);color:var(--ink)">${c.face}</div>
+      </div></div>
+      <div class="later" id="ex" style="display:flex;flex-direction:column;gap:10px;align-items:center">${c.extra}</div>
+    </div>
+    <button class="btn main" id="cacher">Cacher</button>`, true);
+  const f = $('#f'), ex = $('#ex');
+  requestAnimationFrame(() => setTimeout(() => { f.classList.add('on'); setTimeout(() => ex.classList.add('show'), 350); }, 60));
+  $('#cacher').onclick = () => { $('#cacher').classList.add('off'); action('cacher'); };
+}
+function mDebut(e) {
+  ecran(`<div class="mid">
+      <div class="h1">Tout le monde a son mot !</div>
+      <div class="card" style="width:230px;padding:26px 14px;transform:rotate(${pench()}deg)"><div class="word" style="font-size:30px">${esc(e.commence)} commence</div></div>
+      <div class="txt">Puis dans le sens des aiguilles d'une montre</div>
+    </div>
+    ${btnHote('vote', 'On peut voter ?')}${btnRevoir()}`, true);
+  if ($('#vote')) $('#vote').onclick = () => { $('#vote').classList.add('off'); action('voter'); };
+  brancheRevoir();
+}
+function mSuite(e) {
+  ecran(`<div class="mid"><div class="h1">La partie continue</div>${e.nouveauBossJe ? chipBoss() : ''}</div>
+    ${btnHote('vote', 'On peut voter ?')}${btnRevoir()}`, true);
+  if ($('#vote')) $('#vote').onclick = () => { $('#vote').classList.add('off'); action('voter'); };
+  brancheRevoir();
+}
+
+// ---------- le vote ----------
+function mVote(e) {
+  const cpt = e => `${e.faits} / ${e.votants} ont voté`;
+  if (e.moi.vivant && !e.aVote) {
+    const ids = e.joueurs.filter(j => j.enJeu && j.vivant && j.id !== e.moi.id && (!e.candidats || e.candidats.includes(j.id))).map(j => j.id);
+    ecran(`<div class="h1" style="margin-top:6px">Qui est éliminé ?</div>
+      ${grille(ids, 'data-v')}
+      <div class="grow"></div>
+      <div class="txt" id="cpt" style="margin-top:16px">${cpt(e)}</div>`, true);
+    app.querySelectorAll('[data-v]').forEach(el => el.onclick = () =>
+      confirme(`Tu votes contre ${esc(nomDe(el.dataset.v))} ?`, () => action('vote', { cible: el.dataset.v })));
+  } else {
+    ecran(`<div class="mid">
+        ${e.moi.vivant ? '' : '<div class="h2">Tu es éliminé, tu ne votes plus</div>'}
+        <div class="card" style="width:220px;padding:30px 16px;transform:rotate(${pench()}deg)"><div class="h2" id="cpt">${cpt(e)}</div></div>
+      </div>`, true);
+  }
+  return e => { const c = $('#cpt'); if (c) c.textContent = cpt(e); };
+}
+function mVotes(e) {
+  const r = e.resultat;
+  const lignes = r.liste
+    ? r.liste.map(([a, b]) => `<div class="vl"><b>${esc(a)}</b><span>→</span><b>${esc(b)}</b></div>`).join('')
+    : r.comptes.map(([a, n]) => `<div class="vl" style="grid-template-columns:1fr auto"><b>${esc(a)}</b><span>${n} voix</span></div>`).join('');
+  const eg = r.egalite ? `<div class="card pop" style="padding:16px 22px;margin-top:18px;transform:rotate(${pench()}deg)"><div class="h2">Égalité !</div></div>
+    ${r.type === 'revote' ? '<div class="txt" style="margin-top:10px">On revote entre les ex aequo</div>' : ''}
+    ${r.type === 'personne' ? "<div class=\"txt\" style=\"margin-top:10px\">Encore égalité : personne n'est éliminé</div>" : ''}` : '';
+  ecran(`<div class="h1" style="margin-top:6px">Les votes</div>
+    <div class="vls">${lignes}</div>${eg}
+    <div class="grow"></div>${btnHote('suite', 'Continuer')}`, true);
+  if ($('#suite')) $('#suite').onclick = () => { $('#suite').classList.add('off'); action('continuer'); };
+}
+function mBoss(e) {
+  if (e.moi.boss && e.moi.vivant) {
+    ecran(`<div class="h2" style="margin-top:6px">Tu es le Boss, choisis qui est éliminé</div>
+      ${grille(e.candidats, 'data-c')}<div class="grow"></div>`, true);
+    app.querySelectorAll('[data-c]').forEach(el => el.onclick = () =>
+      confirme(`Tu es sûr ? ${esc(nomDe(el.dataset.c))} est éliminé.`, () => action('trancher', { cible: el.dataset.c })));
+    return;
+  }
+  ecran(`<div class="mid"><div class="card" style="padding:16px 22px;transform:rotate(${pench()}deg)"><div class="h2">Égalité !</div></div>
+    <div class="txt">Le Boss tranche…</div></div>`, true);
+}
+
+// ---------- révélation, Mr. White, Boss ----------
+function mRevele(e) {
+  const j = e.elimine;
+  ecran(`<div class="top">${esc(j.nom)} était…</div>
+    <div class="mid"><div class="stage" id="st"><div class="flip" id="f">
+      <div class="face back"></div>
+      <div class="face front r-${j.role}"><div class="rn">${NOM_ROLE[j.role]}</div></div>
+    </div></div></div>
+    ${e.hote ? '<button class="btn main later" id="suite" style="pointer-events:none">Continuer</button>' : ''}`, true);
+  const st = $('#st'), f = $('#f'), b = $('#suite');
+  st.classList.add('charge');
+  setTimeout(() => {
+    st.classList.remove('charge'); st.style.transform = `rotate(${pench()}deg)`;
+    f.classList.add('on');
+    setTimeout(() => { st.classList.add('pop'); if (b) { b.classList.add('show'); b.style.pointerEvents = ''; } }, 650);
+  }, 1900);
+  if (b) b.onclick = () => { b.classList.add('off'); action('continuer'); };
+}
+function mMrw(e) {
+  if (e.mrwJe) {
+    ecran(`<div class="mid">
+        <div class="decompte" id="dc"></div>
+        <div class="h2">Pas de blabla ! Note ton mot sans tricher.</div>
+        <input id="mot" maxlength="30" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="send">
+      </div>
+      <button class="btn main" id="env">Envoyer</button>`, true);
+    const inp = $('#mot'), env = $('#env');
+    setTimeout(() => inp.focus(), 300);
+    const envoie = () => { const m = inp.value.trim(); if (!m) return; inp.blur(); env.classList.add('off'); action('devine', { mot: m }); };
+    env.onclick = envoie;
+    inp.onkeydown = ev => { if (ev.key === 'Enter') envoie(); };
+    decompte(e.reste, () => { inp.disabled = true; inp.blur(); env.classList.add('off'); });
+    return;
+  }
+  ecran(`<div class="mid"><div class="card" style="width:240px;padding:30px 16px;transform:rotate(${pench()}deg)"><div class="h2">Mr. White, devine le mot !</div></div>
+    <div class="decompte" id="dc"></div></div>`, true);
+  decompte(e.reste);
+}
+function mJuge(e) {
+  ecran(`<div class="mid"><div class="card" style="width:250px;padding:30px 16px;transform:rotate(${pench()}deg)"><div class="h2">Mr. White propose : <span class="word" style="display:block;margin-top:8px">${esc(e.mrwMot)}</span></div></div></div>
+    ${e.hote ? '<div class="two"><button class="btn" id="rate">Raté</button><button class="btn main" id="trouve">Il a trouvé</button></div>' : ''}`, true);
+  if (e.hote) {
+    $('#trouve').onclick = () => { app.querySelectorAll('.two .btn').forEach(b => b.classList.add('off')); action('juger', { ok: 1 }); };
+    $('#rate').onclick = () => { app.querySelectorAll('.two .btn').forEach(b => b.classList.add('off')); action('juger', { ok: 0 }); };
+  }
+}
+function mRate(e) {
+  ecran(`<div class="mid"><div class="card" style="width:240px;padding:30px 16px;transform:rotate(${pench()}deg)"><div class="h2">Temps écoulé !</div></div></div>
+    ${btnHote('suite', 'Continuer')}`, true);
+  if ($('#suite')) $('#suite').onclick = () => { $('#suite').classList.add('off'); action('continuer'); };
+}
+function mTransfert(e) {
+  if (e.exBossJe) {
+    const ids = e.joueurs.filter(j => j.enJeu && j.vivant).map(j => j.id);
+    ecran(`<div class="decompte" id="dc" style="margin-top:4px"></div>
+      <div class="h2" style="margin-top:10px">Donne ton titre de Boss</div>
+      ${grille(ids, 'data-d')}<div class="grow"></div>`, true);
+    let fait = false;
+    app.querySelectorAll('[data-d]').forEach(el => el.onclick = () => { if (fait) return; fait = true; el.style.background = 'var(--gold)'; action('donner', { cible: el.dataset.d }); });
+    decompte(e.reste);
+    return;
+  }
+  ecran(`<div class="mid"><div class="card" style="width:240px;padding:30px 16px;transform:rotate(${pench()}deg)"><div class="h2">Le Boss donne son titre…</div></div>
+    <div class="decompte" id="dc"></div></div>`, true);
+  decompte(e.reste);
+}
+
+// ---------- fin et podium (sur tous les téléphones) ----------
+function mFin(e) {
+  const F = e.fin, qui = F.qui;
+  const T = { civils: 'Les civils gagnent !', under: 'Les Undercover gagnent !', white: 'Mr. White gagne !', whiteDevine: 'Mr. White gagne !', bouffon: 'Le Bouffon gagne !', fun: '' };
+  const mots = qui === 'whiteDevine' ? `<div class="txt">Le mot était : <b>${esc(F.motC)}</b></div>`
+    : qui === 'fun' ? '' : `<div class="txt">Mot des civils : <b>${esc(F.motC)}</b></div>` + (F.joueurs.some(x => x.role === 'under') ? `<div class="txt" style="margin-top:-10px">Mot des Undercover : <b>${esc(F.motU)}</b></div>` : '');
+  ecran(`<div class="mid">
+      ${T[qui] ? `<div class="card pop" style="padding:22px 18px;transform:rotate(${pench()}deg)"><div class="h1">${T[qui]}</div></div>` : ''}
+      ${mots}
+      <div class="who">${F.joueurs.map(x => `<span class="tag r-${x.role} ${x.vivant ? '' : 'dead'}">${esc(x.nom)} · ${NOM_ROLE[x.role]}</span>`).join('')}</div>
+    </div>
+    ${e.hote ? `<button class="btn main" id="rejouer">Rejouer</button>
+      <button class="btn" id="nouv">Nouvelle partie</button>
+      ${e.pts ? '<button class="btn" id="soir">Fin de soirée</button>' : ''}`
+    : '<div class="txt" style="margin-bottom:12px">En attente du maître du jeu…</div>'}`);
+  if (!e.hote) return;
+  $('#rejouer').onclick = () => { $('#rejouer').classList.add('off'); hoteLancer(); };
+  $('#nouv').onclick = () => action('salon');
+  if ($('#soir')) $('#soir').onclick = () => action('podium');
+}
+function mPodium(e) {
+  const cl = e.podium || [], ordre = [1, 0, 2], haut = [210, 150, 105];
+  ecran(`<div class="h1" style="margin-top:10px">Le podium de la soirée</div>
+    <div class="mid"><div class="podium">${ordre.map(r => cl[r] ? `<div class="pod ${r === 0 ? 'g' : ''}"><div class="n">${esc(cl[r][0])}</div><div class="p">${cl[r][1]} pts</div><div class="b" data-h="${haut[r]}">${r + 1}</div></div>` : '').join('')}</div></div>
+    ${e.hote ? '<button class="btn main" id="nouv">Nouvelle partie</button>' : '<div class="txt" style="margin-bottom:12px">En attente du maître du jeu…</div>'}`);
+  app.querySelectorAll('.pod .b').forEach((b, k) => setTimeout(() => b.style.height = b.dataset.h + 'px', 250 + k * 250));
+  if ($('#nouv')) $('#nouv').onclick = () => action('salon');
+}
+
+// ---------- au lancement : reprendre sa partie, ou ouvrir le lien reçu ----------
+function demarrage() {
+  const codeLien = (PARAMS.get('code') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+  if (codeLien && M && M.code !== codeLien) quitteM();
+  if (M) { ecran('<div class="mid"></div>'); return demarre(); }
+  if (codeLien) return mEntree(true, codeLien);
+  accueil();
+}
+
 window.addEventListener('error', e => {
   // « Script error. ligne 0 » = erreur venue d'ailleurs (Safari, extension, traduction…), pas de l'appli : on l'ignore
   if (!e.lineno || /^Script error/i.test(e.message || '')) return;
@@ -501,7 +939,7 @@ window.addEventListener('error', e => {
   document.body.appendChild(d);
   setTimeout(() => d.remove(), 10000);
 });
-accueil();
+demarrage();
 </script>
 
 <script>
